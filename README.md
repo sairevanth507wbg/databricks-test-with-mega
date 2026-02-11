@@ -21,7 +21,7 @@ Then to setup and verify the app works locally:
 
 ```bash
 pip install -r requirements.txt
-dotenv run - python app.py
+dotenv run -- python app.py
 open http://127.0.0.1:8050/
 ```
 You should see the data app.
