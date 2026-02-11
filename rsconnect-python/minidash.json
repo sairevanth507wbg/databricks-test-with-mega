@@ -1,0 +1,22 @@
+{
+    "https://w0lxdrconn01.worldbank.org/": {
+        "server_url": "https://w0lxdrconn01.worldbank.org/",
+        "filename": "/Users/wlu4/workspace/minidash",
+        "app_url": "https://w0lxdrconn01.worldbank.org/rpf/",
+        "app_id": "16b911ef-1cae-4f91-883d-3df8471ddb41",
+        "app_guid": "16b911ef-1cae-4f91-883d-3df8471ddb41",
+        "title": "minidash",
+        "app_mode": "python-dash",
+        "app_store_version": 1
+    },
+    "https://w0lxdshyprd1c01.worldbank.org": {
+        "server_url": "https://w0lxdshyprd1c01.worldbank.org",
+        "filename": "/Users/wlu4/workspace/mega/minidash",
+        "app_url": "https://w0lxdshyprd1c01.worldbank.org/content/e10ae796-409c-4ba3-b00e-723c8f1f2150/",
+        "app_id": "86",
+        "app_guid": "e10ae796-409c-4ba3-b00e-723c8f1f2150",
+        "title": "minidash",
+        "app_mode": "python-dash",
+        "app_store_version": 1
+    }
+}

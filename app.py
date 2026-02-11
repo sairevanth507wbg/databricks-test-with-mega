@@ -2,19 +2,11 @@ import dash
 import dash_bootstrap_components as dbc
 from dash import dcc, html, dash_table
 from dash.dependencies import Input, Output
-from dash.long_callback import DiskcacheLongCallbackManager
 from queries import get_gdp, get_country, get_available_data
 from plot import make_health_plot, make_edu_plot
 
-import diskcache
-cache = diskcache.Cache("./cache")
-long_callback_manager = DiskcacheLongCallbackManager(cache)
-
-dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
 app = dash.Dash(
     __name__,
-    external_stylesheets=[dbc.themes.QUARTZ, dbc_css],
-    long_callback_manager=long_callback_manager,
     suppress_callback_exceptions=True,
     use_pages=True,
 )
@@ -83,7 +75,7 @@ def redirect_default(url_pathname):
         return ""
 
 
-@app.long_callback(
+@app.callback(
     Output('thematic-content', 'children'),
     Input('thematic-tabs', 'active_tab'),
     running=[
@@ -111,7 +103,7 @@ def render_thematic_content(tab):
             dcc.Graph(id='health-plot', figure=make_health_plot(gdp, country))
         ])
 
-@app.long_callback(
+@app.callback(
     Output('availability-content', 'children'),
     Input('avail-nav', 'active'),
     running=[
