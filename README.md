@@ -29,10 +29,7 @@ You should see the data app.
 
 ## Deployment
 
-- Internal Server: https://w0lxdrconn01.worldbank.org
-- External Server: https://w0lxdshyprd1c01.worldbank.org
-
-Ensure you have an RStudio Connect account, if not [request here](https://worldbankgroup.service-now.com/wbg?id=ticket&table=sc_req_item&sys_id=fbb93028476502d09169d03fe16d4309). Upon account provisioning, generate API key(s) on the target server's UI.
+Ensure you have an RStudio Connect account, if not [request here](https://worldbankgroup.service-now.com/wbg?id=ticket&table=sc_req_item&sys_id=fbb93028476502d09169d03fe16d4309). Upon account provisioning, you will be provided the internal and external server addresses. Generate API key(s) on the target server's UI.
 
 Check which python version is supported by the server with:
 
@@ -46,11 +43,11 @@ As of writing both the internal and external server supports 3.8.14 so that's th
 Add your RStudio Connect API key (one-time action):
 
 ```bash
-rsconnect add --server https://w0lxdshyprd1c01.worldbank.org --api-key [your API key] --name prod
+rsconnect add --server https://w0lxdrconn01.worldbank.org --api-key [your API key] --name staging
 ```
 
 To deploy:
 
 ```bash
-rsconnect deploy dash --name prod ./
+rsconnect deploy dash --name staging ./
 ```
