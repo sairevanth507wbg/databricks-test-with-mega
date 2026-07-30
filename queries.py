@@ -6,12 +6,23 @@ from databricks.sdk.core import Config, oauth_service_principal
 
 SERVER_HOSTNAME = os.getenv("DATABRICKS_SERVER_HOSTNAME")
 
+CATALOG = os.getenv("CATALOG", "prd_mega")
+BOOST_SCHEMA = os.getenv("BOOST_SCHEMA", "boost")
+INDICATOR_SCHEMA = os.getenv("INDICATOR_SCHEMA", "indicator")
+BOOST = f"{CATALOG}.{BOOST_SCHEMA}"
+INDICATOR = f"{CATALOG}.{INDICATOR_SCHEMA}"
+
+CLIENT_ID = os.getenv("DATABRICKS_CLIENT_ID")
+CLIENT_SECRET = os.getenv("DATABRICKS_CLIENT_SECRET")
+TOKEN = os.getenv("DATABRICKS_TOKEN")
+
+
 def credentials_provider():
     print("Initializing credential provider...")
     config = Config(
         host = f"https://{SERVER_HOSTNAME}",
-        client_id     = os.getenv("DATABRICKS_CLIENT_ID"),
-        client_secret = os.getenv("DATABRICKS_CLIENT_SECRET"))
+        client_id     = CLIENT_ID,
+        client_secret = CLIENT_SECRET)
     return oauth_service_principal(config)
 
 
@@ -24,11 +35,22 @@ def execute_query(query):
     df : pandas dataframe
         basic query of data from Databricks as a pandas dataframe
     """
-    with sql.connect(
+    connect_kwargs = dict(
         server_hostname = SERVER_HOSTNAME,
         http_path = os.getenv("DATABRICKS_HTTP_PATH"),
-        credentials_provider=credentials_provider,
-    ) as conn:
+    )
+    if CLIENT_ID and CLIENT_SECRET:
+        connect_kwargs["credentials_provider"] = credentials_provider
+    elif TOKEN:
+        connect_kwargs["access_token"] = TOKEN
+    else:
+        raise EnvironmentError(
+            "No Databricks credentials found. Set either "
+            "DATABRICKS_CLIENT_ID + DATABRICKS_CLIENT_SECRET (service principal) "
+            "or DATABRICKS_TOKEN (personal access token)."
+        )
+
+    with sql.connect(**connect_kwargs) as conn:
         cursor = conn.cursor()
         cursor.execute(query)
         df = cursor.fetchall_arrow().to_pandas()
@@ -37,18 +59,18 @@ def execute_query(query):
 
 
 def get_available_data():
-    return execute_query("SELECT * FROM prd_mega.boost.data_availability")
+    return execute_query(f"SELECT * FROM {BOOST}.data_availability")
 
 
 def get_gdp():
-    return execute_query("SELECT * FROM prd_mega.indicator.gdp")
+    return execute_query(f"SELECT * FROM {INDICATOR}.gdp")
 
 def get_country():
-    return execute_query("SELECT * FROM prd_mega.indicator.country")
+    return execute_query(f"SELECT * FROM {INDICATOR}.country")
 
 
 def get_health_data(gdp, country):
-    health_indicator = execute_query("SELECT * FROM prd_mega.indicator.universal_health_coverage_index_gho")
+    health_indicator = execute_query(f"SELECT * FROM {INDICATOR}.universal_health_coverage_index_gho")
     merged = pd.merge(gdp, health_indicator, on=['country_code', 'year'], how='inner')
     merged = merged[merged.gdp_per_capita_2017_ppp.notnull() & merged.universal_health_coverage_index.notnull()]
     df = pd.merge(merged, country, on=['country_code'], how='inner')
@@ -59,7 +81,7 @@ def get_health_data(gdp, country):
 
 
 def get_edu_data(gdp, country):
-    edu_indicator = execute_query("SELECT * FROM prd_mega.indicator.learning_poverty_rate")
+    edu_indicator = execute_query(f"SELECT * FROM {INDICATOR}.learning_poverty_rate")
     merged = pd.merge(gdp, edu_indicator, on=['country_code', 'year'], how='inner')
     merged = merged[merged.gdp_per_capita_2017_ppp.notnull() & merged.learning_poverty_rate.notnull()]
     df = pd.merge(merged, country, on=['country_code'], how='inner')

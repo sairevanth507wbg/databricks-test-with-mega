@@ -18,5 +18,15 @@
         "title": "minidash",
         "app_mode": "python-dash",
         "app_store_version": 1
+    },
+    "https://posit-connect-qa.worldbank.org": {
+        "server_url": "https://posit-connect-qa.worldbank.org",
+        "filename": "/Users/wlu4/workspace/mega/minidash",
+        "app_url": "https://posit-connect-qa.worldbank.org/content/16b911ef-1cae-4f91-883d-3df8471ddb41/",
+        "app_id": "6",
+        "app_guid": "16b911ef-1cae-4f91-883d-3df8471ddb41",
+        "title": "minidash",
+        "app_mode": "python-dash",
+        "app_store_version": 1
     }
 }
