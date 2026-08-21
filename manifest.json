@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "locale": "en_US.UTF-8",
+  "metadata": {
+    "appmode": "python-dash",
+    "entrypoint": "app"
+  },
+  "python": {
+    "version": "3.11.9",
+    "package_manager": {
+      "name": "pip",
+      "version": "25.2",
+      "package_file": "requirements.txt"
+    }
+  },
+  "environment": {
+    "python": {
+      "requires": "~=3.11.0"
+    }
+  },
+  "files": {
+    "requirements.txt": {
+      "checksum": "871d02fc4b526492094375f792695171"
+    },
+    ".env.example": {
+      "checksum": "7db1d238b98bec9e662a662a8e83b90e"
+    },
+    ".gitignore": {
+      "checksum": "39803e4fec18322a76fc114f79cbbad0"
+    },
+    ".python-version": {
+      "checksum": "a8d144c1af57772a7aa7231d7702c21b"
+    },
+    "LICENSE": {
+      "checksum": "38dd3f56a1d5e1e9a729b9e0f0109be1"
+    },
+    "README.md": {
+      "checksum": "24f42a0c7fd7f9ffaeac9741a13bba5f"
+    },
+    "app.py": {
+      "checksum": "0222c535ff94bfc36bf486c3a5ca53e9"
+    },
+    "assets/10_bootstrap.min.css": {
+      "checksum": "28f55ed096c44260499646c9f1a7274c"
+    },
+    "assets/20_dbc.min.css": {
+      "checksum": "a2909926c2b4a0a8a393bd0f3d3daf09"
+    },
+    "assets/rpf_logo.png": {
+      "checksum": "a2268f8ce57d2266b25a4c27b485443b"
+    },
+    "pages/availability.py": {
+      "checksum": "5a39e42a552c2dbb5d95df971f44de48"
+    },
+    "pages/home.py": {
+      "checksum": "ade7aff877826ac010e4bc3b4cf465e1"
+    },
+    "pages/thematic.py": {
+      "checksum": "dca01a2722fbdb8e53cf74dd661322db"
+    },
+    "plot.py": {
+      "checksum": "764ab0914e9c7afd22b2bf6ca004969d"
+    },
+    "queries.py": {
+      "checksum": "875bfb3c2d73a8d31d48bc8835e9e57b"
+    }
+  }
+}
