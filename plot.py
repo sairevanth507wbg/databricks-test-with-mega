@@ -218,3 +218,62 @@ def make_health_plot(gdp, country):
 def make_edu_plot(gdp, country):
     dataset = get_edu_data(gdp, country)
     return make_plot(dataset, gdp, country, 'Learning Poverty Rate', 'Learning Poverty Rate', 'learning_poverty_rate')
+
+
+def make_expenditure_plot(df, category):
+    """Spending level and share of GDP for one functional category.
+
+    Copes with whatever the table happens to hold - a single country and year
+    renders as bars, several years render as trend lines.
+    """
+    data = df[df.functional_category == category].sort_values(['country_name', 'year'])
+
+    if data.empty:
+        fig = go.Figure()
+        fig.add_annotation(
+            text=f"No {category} rows in the expenditure table",
+            showarrow=False, font=dict(size=16),
+        )
+        fig.update_layout(height=450)
+        return fig
+
+    latest_year = int(data.year.max())
+    multi_year = data.year.nunique() > 1
+
+    fig = make_subplots(
+        rows=1, cols=2,
+        subplot_titles=(
+            f"{category} expenditure (US$ millions)",
+            f"{category} spending as share of GDP, {latest_year} (%)",
+        ),
+    )
+
+    palette = px.colors.qualitative.Plotly
+    for i, (country, rows) in enumerate(data.groupby('country_name')):
+        colour = palette[i % len(palette)]
+        if multi_year:
+            fig.add_trace(go.Scatter(
+                x=rows.year, y=rows.expenditure_usd_millions,
+                mode='lines+markers', name=country, legendgroup=country,
+                line=dict(color=colour),
+                hovertemplate=f"<b>{country}</b><br>%{{x}}<br>US$%{{y:,.1f}}M<extra></extra>",
+            ), row=1, col=1)
+        else:
+            fig.add_trace(go.Bar(
+                x=[country], y=rows.expenditure_usd_millions,
+                name=country, legendgroup=country, marker_color=colour,
+                hovertemplate=f"<b>{country}</b><br>US$%{{y:,.1f}}M<extra></extra>",
+            ), row=1, col=1)
+
+    latest = data[data.year == latest_year].sort_values('share_of_gdp_pct')
+    fig.add_trace(go.Bar(
+        x=latest.share_of_gdp_pct, y=latest.country_name,
+        orientation='h', marker_color='#2c7fb8', showlegend=False,
+        hovertemplate="<b>%{y}</b><br>%{x:.1f}% of GDP<extra></extra>",
+    ), row=1, col=2)
+
+    fig.update_xaxes(title_text='Year' if multi_year else 'Country', row=1, col=1)
+    fig.update_yaxes(title_text='US$ millions', row=1, col=1)
+    fig.update_xaxes(title_text='% of GDP', row=1, col=2)
+    fig.update_layout(height=480, margin=dict(t=70, b=40), legend_title_text='Country')
+    return fig

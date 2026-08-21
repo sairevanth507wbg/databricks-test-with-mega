@@ -2,8 +2,8 @@ import dash
 import dash_bootstrap_components as dbc
 from dash import dcc, html, dash_table
 from dash.dependencies import Input, Output
-from queries import get_gdp, get_country, get_available_data
-from plot import make_health_plot, make_edu_plot
+from queries import get_expenditure, get_available_data
+from plot import make_expenditure_plot
 
 app = dash.Dash(
     __name__,
@@ -92,16 +92,11 @@ def redirect_default(url_pathname):
     ],
 )
 def render_thematic_content(tab):
-    gdp = get_gdp()
-    country = get_country()
-    if tab == 'tab-education':
-        return html.Div([
-            dcc.Graph(id='edu-plot', figure=make_edu_plot(gdp, country))
-        ])
-    elif tab == 'tab-health':
-        return html.Div([
-            dcc.Graph(id='health-plot', figure=make_health_plot(gdp, country))
-        ])
+    category = 'Education' if tab == 'tab-education' else 'Health'
+    expenditure = get_expenditure()
+    return html.Div([
+        dcc.Graph(id='thematic-plot', figure=make_expenditure_plot(expenditure, category))
+    ])
 
 @app.callback(
     Output('availability-content', 'children'),
