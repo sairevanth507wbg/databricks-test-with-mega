@@ -34,7 +34,7 @@ Ensure you have an RStudio Connect account, if not [request here](https://worldb
 Check which python version is supported by the server with:
 
 ```bash
-rsconnect content search --server [server URL] --api-key [your API key] | jq -c '.[] | {}' | sort | uniq
+rsconnect content search --server [server URL] --api-key "$CONNECT_API_KEY" | jq -c '.[] | {}' | sort | uniq
 ```
 
 As of writing both the internal and external server supports 3.8.14 so that's the version we are going to use for building & deploying the dash app. If you are using `pyenv` this repo's python version has configured to use 3.8.14. If the target server uses a different version, feel free to switch using `pyenv local 3.x.x`.
@@ -43,7 +43,7 @@ As of writing both the internal and external server supports 3.8.14 so that's th
 Add your RStudio Connect API key (one-time action):
 
 ```bash
-rsconnect add --server https://w0lxdrconn01.worldbank.org --api-key [your API key] --name staging
+rsconnect add --server https://w0lxdrconn01.worldbank.org --api-key "$CONNECT_API_KEY" --name staging
 ```
 
 To deploy:
