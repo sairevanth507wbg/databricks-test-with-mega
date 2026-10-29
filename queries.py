@@ -1,10 +1,10 @@
 """Databricks access for the RPF landing dashboard.
 
-Every query runs as the person looking at the page. Posit Connect mints a short
-lived token for each viewer and sends it to us in a request header; we hand that
-token to the Databricks OAuth integration, which swaps it for credentials scoped
-to that user. If a viewer has no rights on a table, their query fails - that is
-the point of viewer authentication rather than a shared service account.
+Every query runs as one shared service account. The Entra client id, secret and
+scope live in a Posit Connect Databricks OAuth integration of type "Service
+Account"; Connect hands this content a session token, and the integration swaps
+it for a Databricks token belonging to that Entra service principal. Viewers
+all see the same data - whatever the service principal can read.
 
 Set DATABRICKS_CLIENT_ID/SECRET or DATABRICKS_TOKEN to bypass all of this when
 running off Connect (a laptop, a CI job). On Connect, leave them unset.
@@ -16,16 +16,12 @@ from contextlib import contextmanager
 import pandas as pd
 from databricks import sql
 from databricks.sdk.core import Config, oauth_service_principal
-from flask import has_request_context, request
 from posit.connect.external.databricks import (
     databricks_config,
     sql_credentials,
     ConnectStrategy,
 )
 
-
-# Connect sets this on every request it proxies through to us.
-USER_SESSION_TOKEN_HEADER = "Posit-Connect-User-Session-Token"
 
 SERVER_HOSTNAME = os.getenv("DATABRICKS_SERVER_HOSTNAME")
 HTTP_PATH = os.getenv("DATABRICKS_HTTP_PATH")
@@ -46,17 +42,6 @@ CLIENT_SECRET = os.getenv("DATABRICKS_CLIENT_SECRET")
 TOKEN = os.getenv("DATABRICKS_TOKEN")
 
 
-class ViewerNotSignedIn(RuntimeError):
-    """No viewer token on the request, so we cannot authenticate as anyone."""
-
-
-def viewer_token():
-    """The token Connect minted for whoever is viewing the page, if any."""
-    if not has_request_context():
-        return None
-    return request.headers.get(USER_SESSION_TOKEN_HEADER)
-
-
 def service_principal_credentials():
     config = Config(
         host = f"https://{SERVER_HOSTNAME}",
@@ -65,24 +50,16 @@ def service_principal_credentials():
     return oauth_service_principal(config)
 
 
-def viewer_credentials():
-    """Databricks credentials belonging to the current viewer.
+def service_account_credentials():
+    """Databricks credentials from Connect's Service Account integration.
 
-    Built per request on purpose - the token is short lived and different for
-    every user, so this must not be cached or reused across requests.
+    ConnectStrategy() with no user_session_token reads the content session
+    token Connect injects into this process and exchanges it through the
+    integration for the Entra service principal's Databricks token.
     """
-    token = viewer_token()
-    if not token:
-        raise ViewerNotSignedIn(
-            f"No {USER_SESSION_TOKEN_HEADER} header on this request. The "
-            "Databricks integration uses Viewer authentication, so the "
-            "dashboard has to be opened through Posit Connect by a signed-in "
-            "user who has authorised the integration."
-        )
-
     cfg = databricks_config(
         host = f"https://{SERVER_HOSTNAME}",
-        posit_connect_strategy = ConnectStrategy(user_session_token = token),
+        posit_connect_strategy = ConnectStrategy(),
     )
     # sql_credentials hands back a no-arg callable, which is the shape
     # databricks.sql.connect wants for credentials_provider.
@@ -113,7 +90,7 @@ def connect():
     elif TOKEN:
         connect_kwargs["access_token"] = TOKEN
     else:
-        connect_kwargs["credentials_provider"] = viewer_credentials()
+        connect_kwargs["credentials_provider"] = service_account_credentials()
 
     with sql.connect(**connect_kwargs) as conn:
         yield conn
