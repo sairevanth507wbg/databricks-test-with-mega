@@ -7,7 +7,7 @@ This is a dash app that contains a landing page and an overview dashboard used a
 First `git clone` this repo.
 
 Get connection details for the SQL Warehouse compute resource which is used for providing the database connection: https://docs.databricks.com/en/integrations/compute-details.html
-Contact the maintainers of this repo for databricks client ID and secret.
+Contact the maintainers of this repo for the Entra app's tenant ID, client ID and secret.
 
 Create `.env` from `.env.example` and the obtained information:
 

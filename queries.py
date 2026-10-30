@@ -6,8 +6,9 @@ Account"; Connect hands this content a session token, and the integration swaps
 it for a Databricks token belonging to that Entra service principal. Viewers
 all see the same data - whatever the service principal can read.
 
-Set DATABRICKS_CLIENT_ID/SECRET or DATABRICKS_TOKEN to bypass all of this when
-running off Connect (a laptop, a CI job). On Connect, leave them unset.
+Set AZURE_TENANT_ID/CLIENT_ID/CLIENT_SECRET (the same Entra app) or
+DATABRICKS_TOKEN to bypass all of this when running off Connect (a laptop, a CI
+job). On Connect, leave them unset.
 """
 
 import os
@@ -15,7 +16,8 @@ from contextlib import contextmanager
 
 import pandas as pd
 from databricks import sql
-from databricks.sdk.core import Config, oauth_service_principal
+from databricks.sdk.core import Config
+from databricks.sdk.credentials_provider import azure_service_principal
 from posit.connect.external.databricks import (
     databricks_config,
     sql_credentials,
@@ -37,17 +39,22 @@ INDICATOR = f"{CATALOG}.{INDICATOR_SCHEMA}"
 EXPENDITURE_SCHEMA = os.getenv("EXPENDITURE_SCHEMA", BOOST_SCHEMA)
 EXPENDITURE = f"{CATALOG}.{EXPENDITURE_SCHEMA}"
 
-CLIENT_ID = os.getenv("DATABRICKS_CLIENT_ID")
-CLIENT_SECRET = os.getenv("DATABRICKS_CLIENT_SECRET")
 TOKEN = os.getenv("DATABRICKS_TOKEN")
 
+# Connect's Azure integration sets AZURE_CLIENT_ID and AZURE_TENANT_ID itself but
+# never the secret, so the secret alone decides whether this path is used.
+AZURE_TENANT_ID = os.getenv("AZURE_TENANT_ID")
+AZURE_CLIENT_ID = os.getenv("AZURE_CLIENT_ID")
+AZURE_CLIENT_SECRET = os.getenv("AZURE_CLIENT_SECRET")
 
-def service_principal_credentials():
+
+def entra_credentials():
     config = Config(
         host = f"https://{SERVER_HOSTNAME}",
-        client_id     = CLIENT_ID,
-        client_secret = CLIENT_SECRET)
-    return oauth_service_principal(config)
+        azure_tenant_id     = AZURE_TENANT_ID,
+        azure_client_id     = AZURE_CLIENT_ID,
+        azure_client_secret = AZURE_CLIENT_SECRET)
+    return azure_service_principal(config)
 
 
 def service_account_credentials():
@@ -85,8 +92,8 @@ def connect():
         server_hostname = SERVER_HOSTNAME,
         http_path = HTTP_PATH,
     )
-    if CLIENT_ID and CLIENT_SECRET:
-        connect_kwargs["credentials_provider"] = service_principal_credentials
+    if AZURE_CLIENT_SECRET:
+        connect_kwargs["credentials_provider"] = entra_credentials
     elif TOKEN:
         connect_kwargs["access_token"] = TOKEN
     else:
